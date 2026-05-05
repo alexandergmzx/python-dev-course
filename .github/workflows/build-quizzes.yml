@@ -1,0 +1,57 @@
+name: Build Windows Quiz Executables
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "Exams/c*.json"
+      - "Exams/quiz_engine.py"
+      - ".github/workflows/build-quizzes.yml"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: Exams
+        shell: pwsh
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install customtkinter pyinstaller
+
+      - name: Build all quizzes
+        run: |
+          for ($i = 1; $i -le 12; $i++) {
+              $src = "c$i.json"
+              if (-not (Test-Path $src)) {
+                  Write-Host "[skip] $src not found — skipping quiz$i"
+                  continue
+              }
+              Write-Host "=== Building quiz$i ==="
+              Copy-Item $src questions.json -Force
+              pyinstaller `
+                  --onefile `
+                  --windowed `
+                  --name "quiz$i" `
+                  --collect-all customtkinter `
+                  --add-data "questions.json;." `
+                  --noconfirm `
+                  --log-level WARN `
+                  quiz_engine.py
+              Remove-Item questions.json
+          }
+
+      - name: Upload executables
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-quizzes
+          path: Exams/dist/*.exe

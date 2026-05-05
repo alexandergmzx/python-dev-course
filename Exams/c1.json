@@ -1,0 +1,365 @@
+{
+  "quiz_title": "Python for DevOps — Class 1 Quiz",
+  "questions": [
+    {
+      "question": "Python is dynamically typed. After this code runs, what type does x point to?",
+      "code": "x = 42\nx = \"hello\"\nx = [1, 2, 3]\nprint(type(x).__name__)",
+      "options": [
+        "int",
+        "str",
+        "list",
+        "object"
+      ],
+      "correct": 2,
+      "explanation": "In Python the TYPE belongs to the OBJECT, not to the variable name. Each assignment makes x point to a brand-new PyObject of a different type. The most recent assignment is a list, so type(x).__name__ is 'list'.",
+      "labels": [
+        "f",
+        "b",
+        "g",
+        "t"
+      ]
+    },
+    {
+      "question": "What does this snippet reveal about Python variables?",
+      "code": "a = 100\nb = a\nprint(id(a) == id(b))",
+      "options": [
+        "True — both names point to the same object",
+        "False — b is a copy of a",
+        "True — but only because 100 is a small integer",
+        "Error — id() requires a string"
+      ],
+      "correct": 0,
+      "explanation": "b = a does NOT copy the value — it makes b a second label for the same PyObject. id() returns the memory address; both names refer to the exact same object, so id(a) == id(b) is True.",
+      "labels": [
+        "r",
+        "p",
+        "m",
+        "f"
+      ]
+    },
+    {
+      "question": "What is sys.getrefcount(data) likely to print here?",
+      "code": "import sys\ndata = [1, 2, 3]\nalias = data\nanother = data\nprint(sys.getrefcount(data))",
+      "options": [
+        "1",
+        "2",
+        "3",
+        "4"
+      ],
+      "correct": 3,
+      "explanation": "Reference counting tracks every label pointing at an object. We have: data, alias, another → 3 references, plus the temporary argument inside getrefcount itself = 4. When the count drops to zero, Python automatically frees the memory.",
+      "labels": [
+        "h",
+        "f",
+        "s",
+        "a"
+      ]
+    },
+    {
+      "question": "Strings are immutable. What does this print?",
+      "code": "greeting = \"hello\"\noriginal_id = id(greeting)\ngreeting += \" world\"\nprint(id(greeting) == original_id)",
+      "options": [
+        "True",
+        "False",
+        "TypeError",
+        "None"
+      ],
+      "correct": 1,
+      "explanation": "Strings cannot be modified in place. The += operator does NOT mutate the original — it creates a brand-new string object and rebinds 'greeting' to it. The new id is different, so the comparison is False.",
+      "labels": [
+        "e",
+        "l",
+        "v",
+        "b"
+      ]
+    },
+    {
+      "question": "Why is the second loop strongly preferred for building large strings?",
+      "code": "# Version A\nresult = \"\"\nfor w in words:\n    result += w + \" \"\n\n# Version B\nresult = \" \".join(words)",
+      "options": [
+        "B is just shorter — performance is identical",
+        "A creates a new string PyObject every iteration; B allocates once",
+        "B uses less RAM but A is faster",
+        "A modifies the original list"
+      ],
+      "correct": 1,
+      "explanation": "Because strings are immutable, every += in version A allocates a brand new string and copies all previous content. For N words this is O(N²). join() figures out the total size first and allocates once — O(N). Always use join() for batched concatenation.",
+      "labels": [
+        "b",
+        ".",
+        "e",
+        "f"
+      ]
+    },
+    {
+      "question": "What does this code print?",
+      "code": "fruits = [\"apple\", \"banana\", \"cherry\"]\nbasket = fruits\nbasket.append(\"date\")\nprint(fruits)",
+      "options": [
+        "['apple', 'banana', 'cherry']",
+        "['apple', 'banana', 'cherry', 'date']",
+        "['date']",
+        "TypeError"
+      ],
+      "correct": 1,
+      "explanation": "A Python list is a dynamic array of PyObject* pointers. basket = fruits doesn't copy the array — both names point to the SAME list object. append() mutates that one shared object, so 'fruits' sees the change too. To make an independent copy: fruits.copy() or fruits[:].",
+      "labels": [
+        "m",
+        "i",
+        "b",
+        "p"
+      ]
+    },
+    {
+      "question": "Watch out — this is a common bug. What does this print?",
+      "code": "numbers = [3, 1, 4, 1, 5]\nresult = numbers.sort()\nprint(result)",
+      "options": [
+        "[1, 1, 3, 4, 5]",
+        "[3, 1, 4, 1, 5]",
+        "None",
+        "True"
+      ],
+      "correct": 2,
+      "explanation": "list.sort() sorts the list IN PLACE and returns None — it does not return the sorted list. To get a sorted copy without mutating the original, use sorted(numbers) instead.",
+      "labels": [
+        "k",
+        "v",
+        "g",
+        "f"
+      ]
+    },
+    {
+      "question": "What does this list comprehension produce?",
+      "code": "numbers = [1, 2, 3, 4, 5, 6]\nresult = [n ** 2 for n in numbers if n % 2 == 0]\nprint(result)",
+      "options": [
+        "[1, 4, 9, 16, 25, 36]",
+        "[4, 16, 36]",
+        "[2, 4, 6]",
+        "[1, 9, 25]"
+      ],
+      "correct": 1,
+      "explanation": "The comprehension keeps only even numbers (2, 4, 6) and squares each one → [4, 16, 36]. The C-equivalent would be a for loop with an if and a manual append. Comprehensions express filter+map in a single expression.",
+      "labels": [
+        "w",
+        "n",
+        "p",
+        "u"
+      ]
+    },
+    {
+      "question": "What does this nested comprehension do?",
+      "code": "matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]\nflat = [cell for row in matrix for cell in row]\nprint(flat)",
+      "options": [
+        "[[1,2,3],[4,5,6],[7,8,9]]",
+        "[1, 2, 3, 4, 5, 6, 7, 8, 9]",
+        "[1, 4, 7]",
+        "SyntaxError"
+      ],
+      "correct": 1,
+      "explanation": "Nested comprehensions read left-to-right like nested for loops: 'for each row in matrix, for each cell in row, take cell'. This flattens the 2D matrix into a single 1D list.",
+      "labels": [
+        "b",
+        "a",
+        "j",
+        "t"
+      ]
+    },
+    {
+      "question": "Which of the following creates a DICTIONARY, not a list?",
+      "code": "a = [n ** 2 for n in range(10)]\nb = {n: n ** 2 for n in range(10)}\nc = (n ** 2 for n in range(10))\nd = [x for x in data if x > 0]",
+      "options": [
+        "a — list comprehension",
+        "b — dict comprehension",
+        "c — generator expression",
+        "d — filtered list comprehension"
+      ],
+      "correct": 1,
+      "explanation": "b uses curly braces {} with key:value pairs (n: n**2), making it a DICT comprehension — type(b) is dict. a and d use [] and produce lists. c uses () and produces a generator (lazy iterator, no list allocated). Only b creates a dictionary.",
+      "labels": [
+        "v",
+        "c",
+        "s",
+        "h"
+      ]
+    },
+    {
+      "question": "What does this print?",
+      "code": "person = {\"name\": \"Ada\", \"age\": 36}\nprint(person.get(\"salary\", \"N/A\"))",
+      "options": [
+        "KeyError",
+        "None",
+        "N/A",
+        "''"
+      ],
+      "correct": 2,
+      "explanation": "Using person['salary'] would raise KeyError because the key doesn't exist. The .get() method returns the second argument as a default when the key is missing — here, the string 'N/A'. This is the safe way to read optional config values.",
+      "labels": [
+        "h",
+        "k",
+        "i",
+        "u"
+      ]
+    },
+    {
+      "question": "What is the value of merged after this code (Python 3.9+)?",
+      "code": "defaults  = {\"theme\": \"dark\", \"lang\": \"en\"}\nuser_prefs = {\"lang\": \"es\", \"font\": \"mono\"}\nmerged = defaults | user_prefs\nprint(merged)",
+      "options": [
+        "{'theme': 'dark', 'lang': 'en'}",
+        "{'theme': 'dark', 'lang': 'en', 'font': 'mono'}",
+        "{'theme': 'dark', 'lang': 'es', 'font': 'mono'}",
+        "TypeError"
+      ],
+      "correct": 2,
+      "explanation": "The dict-merge operator | combines both dicts. When the same key appears in both, the RIGHT-HAND side wins. So 'lang' from user_prefs ('es') overrides defaults ('en'). 'theme' and 'font' come through unchanged.",
+      "labels": [
+        "s",
+        "f",
+        "o",
+        "d"
+      ]
+    },
+    {
+      "question": "A dict can be used as a dispatch table. What does this print?",
+      "code": "def add(a, b): return a + b\ndef sub(a, b): return a - b\n\nops = {\"+\": add, \"-\": sub}\nprint(ops[\"+\"](10, 3))",
+      "options": [
+        "13",
+        "7",
+        "'+'",
+        "TypeError"
+      ],
+      "correct": 0,
+      "explanation": "Functions are first-class objects in Python — they can be stored as dict values. ops['+'] retrieves the add function, then (10, 3) calls it. This pattern replaces long if/elif chains with O(1) dictionary lookup.",
+      "labels": [
+        "z",
+        "u",
+        "f",
+        "j"
+      ]
+    },
+    {
+      "question": "What does this exception-handling code print when called as safe_divide(10, 2)?",
+      "code": "def safe_divide(a, b):\n    try:\n        result = a / b\n    except ZeroDivisionError:\n        return None\n    else:\n        print(\"OK\")\n        return result\n    finally:\n        print(\"done\")",
+      "options": [
+        "done",
+        "OK",
+        "OK\\ndone",
+        "done\\nOK"
+      ],
+      "correct": 2,
+      "explanation": "The else clause runs ONLY when no exception was raised — so 'OK' prints first. The finally clause runs ALWAYS, regardless of success, exception, or early return — so 'done' prints last. Both run, in that order: OK, then done.",
+      "labels": [
+        "t",
+        "p",
+        "a",
+        "u"
+      ]
+    },
+    {
+      "question": "Which exception will this catch?",
+      "code": "try:\n    x = int(\"abc\")\nexcept ZeroDivisionError:\n    print(\"caught zero\")\nexcept ValueError:\n    print(\"caught value\")",
+      "options": [
+        "caught zero",
+        "caught value",
+        "Both run",
+        "Neither — the program crashes"
+      ],
+      "correct": 1,
+      "explanation": "int('abc') cannot parse 'abc' as a number, so it raises ValueError, not ZeroDivisionError. Only the matching except block runs. Python checks except clauses in order and picks the first one whose type matches.",
+      "labels": [
+        "d",
+        "r",
+        "w",
+        "p"
+      ]
+    },
+    {
+      "question": "Why is the with statement strongly preferred over manual open/close?",
+      "code": "# Version A\nf = open(\"data.txt\")\ndata = f.read()\nf.close()\n\n# Version B\nwith open(\"data.txt\") as f:\n    data = f.read()",
+      "options": [
+        "B is shorter, but A is faster",
+        "If an exception happens during read() in A, f.close() is never called → file descriptor leak",
+        "B automatically encrypts the file",
+        "A doesn't actually open the file"
+      ],
+      "correct": 1,
+      "explanation": "If read() raises in version A, execution jumps out before f.close() runs, leaking a file descriptor. The with statement guarantees __exit__() (which closes the file) is called even when an exception occurs. This is critical for long-running daemons.",
+      "labels": [
+        "f",
+        "a",
+        "u",
+        "d"
+      ]
+    },
+    {
+      "question": "What is the result if students.txt already exists with content, and you run this?",
+      "code": "with open(\"students.txt\", \"w\") as f:\n    f.write(\"Alice,95\\n\")",
+      "options": [
+        "The new line is appended after existing content",
+        "The file is truncated to empty, then 'Alice,95' is written — old content is gone",
+        "An error: file already exists",
+        "Old content is renamed to students.txt.bak"
+      ],
+      "correct": 1,
+      "explanation": "Mode 'w' TRUNCATES (erases) the file before writing. To preserve existing content and add to the end, use mode 'a' (append). For SREs writing logs, 'w' is almost always the wrong choice.",
+      "labels": [
+        "q",
+        "g",
+        "t",
+        "y"
+      ]
+    },
+    {
+      "question": "What is the cleanest way to read a 10 GB log file line by line without exhausting RAM?",
+      "code": "# Option A\nwith open(\"big.log\") as f:\n    lines = f.read().split(\"\\n\")\n    for line in lines:\n        process(line)\n\n# Option B\nwith open(\"big.log\") as f:\n    for line in f:\n        process(line)",
+      "options": [
+        "A — read() is faster",
+        "B — file objects are iterable and yield one line at a time",
+        "Both use the same memory",
+        "A — but only with .readlines()"
+      ],
+      "correct": 1,
+      "explanation": "Option A loads the ENTIRE 10 GB file into memory before splitting — guaranteed OOM. A file object opened in text mode is itself iterable: 'for line in f' yields one line at a time, so memory usage stays small regardless of file size.",
+      "labels": [
+        "k",
+        "o",
+        "e",
+        "b"
+      ]
+    },
+    {
+      "question": "What does this print when run as: python deploy.py prod 8080",
+      "code": "import sys\nprint(len(sys.argv))\nprint(sys.argv[0])",
+      "options": [
+        "2\\nprod",
+        "3\\ndeploy.py",
+        "3\\nprod",
+        "2\\ndeploy.py"
+      ],
+      "correct": 1,
+      "explanation": "sys.argv = ['deploy.py', 'prod', '8080'], so len() is 3. sys.argv[0] is ALWAYS the script name (matching C's argv[0]). User arguments start at sys.argv[1]. To check for required args, compare len(sys.argv) against your expected count.",
+      "labels": [
+        "m",
+        "z",
+        "q",
+        "d"
+      ]
+    },
+    {
+      "question": "Why do experienced Python developers always create a venv per project?",
+      "code": "# In project A:\npip install requests==2.20\n\n# In project B:\npip install requests==2.31\n\n# Without venv: only ONE version of 'requests' can exist system-wide.\n# Result: installing for B silently breaks A.",
+      "options": [
+        "venv makes Python run faster",
+        "venv lets each project pin its own dependency versions independently",
+        "venv is required by Python 3.12+",
+        "venv encrypts your source code"
+      ],
+      "correct": 1,
+      "explanation": "Without venv, all projects share the system's site-packages folder, so two projects needing different versions of the same package will conflict. A venv gives each project its own isolated /lib and /bin — like a private system Python — preventing 'works on my machine' breakage when system packages change.",
+      "labels": [
+        "m",
+        "a",
+        "f",
+        "k"
+      ]
+    }
+  ]
+}

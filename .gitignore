@@ -1,0 +1,19 @@
+# Virtual environments
+.venv/
+python101/
+
+# PyInstaller artifacts
+Exams/build/
+Exams/dist/
+Exams/*.spec
+
+# Python cache
+__pycache__/
+*.pyc
+
+# OS / editor
+.DS_Store
+*.swp
+
+# Claude Code local settings
+.claude/
