@@ -1,0 +1,145 @@
+{
+  "quiz_title": "Python for DevOps — Class 2 Quiz: Filesystem & Text",
+  "questions": [
+    {
+      "question": "What does this print? (the file already contains 'old\\n' before the script runs)",
+      "code": "with open(\"audit.log\", \"w\") as f:\n    f.write(\"new\\n\")\n\nwith open(\"audit.log\") as f:\n    print(f.read())",
+      "options": ["old\\nnew", "new", "old", "FileExistsError"],
+      "correct": 1,
+      "explanation": "Mode 'w' TRUNCATES the file before writing — the existing 'old' content is destroyed. Only 'new' remains. To preserve existing content, use 'a' (append). For SREs writing logs, 'w' is almost always wrong."
+    },
+    {
+      "question": "What does this print?",
+      "code": "import pathlib\np = pathlib.Path(\"config.yaml\")\np.write_text(\"version: 1\\n\")\np.write_text(\"version: 2\\n\")\nprint(p.read_text())",
+      "options": ["version: 1\\nversion: 2", "version: 2", "FileExistsError", "version: 1"],
+      "correct": 1,
+      "explanation": "pathlib.Path.write_text() OVERWRITES silently — there is no warning when the file already exists. The book explicitly warns about this. The second write replaces the first; only 'version: 2' remains."
+    },
+    {
+      "question": "What is the BEST way to read a 10 GB log file line by line without exhausting RAM?",
+      "code": "# Option A\nwith open(\"big.log\") as f:\n    data = f.read()\n    for line in data.splitlines():\n        process(line)\n\n# Option B\nwith open(\"big.log\") as f:\n    for line in f:\n        process(line)",
+      "options": ["Option A — splitlines() is faster", "Option B — file objects are iterable and yield one line at a time", "Both are equivalent in memory usage", "Use f.readlines() instead"],
+      "correct": 1,
+      "explanation": "Option A loads the ENTIRE 10 GB file into memory before splitting — instant OOM. A file object opened in text mode is iterable: 'for line in f' yields one line at a time, so RAM usage stays small regardless of file size."
+    },
+    {
+      "question": "What is the result of this code?",
+      "code": "import json\n\nwith open(\"policy.json\", \"w\") as f:\n    f.write('{\"role\": \"admin\", \"perms\": [\"read\", \"write\"]}')\n\nwith open(\"policy.json\") as f:\n    data = json.load(f)\n\nprint(type(data).__name__, data[\"perms\"][0])",
+      "options": ["str admin", "dict read", "list write", "JSONDecodeError"],
+      "correct": 1,
+      "explanation": "json.load() parses the JSON file and returns native Python data structures: an object becomes a dict, an array becomes a list. data is a dict; data['perms'][0] indexes into the list and returns 'read'."
+    },
+    {
+      "question": "What does this CSV reading code print?",
+      "code": "import csv\n\nwith open(\"users.csv\", \"w\") as f:\n    f.write(\"id,score\\n42,95\\n\")\n\nwith open(\"users.csv\") as f:\n    rows = list(csv.reader(f))\n\nprint(rows[1][0] + 1)",
+      "options": ["43", "421", "TypeError: can only concatenate str (not int) to str", "ValueError"],
+      "correct": 2,
+      "explanation": "csv.reader yields lists of STRINGS — even '42' is a str, not an int. Adding str + int raises TypeError. To get integers, you must explicitly convert: int(rows[1][0]) + 1. This trips up new SREs reading metrics CSVs."
+    },
+    {
+      "question": "What happens when this regex runs?",
+      "code": "import re\nm = re.search(r\"\\d+\", \"no digits here at all\")\nprint(m.group())",
+      "options": ["'no digits here at all'", "''  (empty string)", "AttributeError: 'NoneType' object has no attribute 'group'", "None"],
+      "correct": 2,
+      "explanation": "re.search() returns None when there is NO match. Calling .group() on None raises AttributeError. Defensive code: check 'if m:' first, or use 'if m := re.search(...):' (walrus). Don't assume regex matches succeed."
+    },
+    {
+      "question": "What does this named-group regex extract?",
+      "code": "import re\nlog = '127.0.0.1 - rj [13/Nov/2019:14:43:30] \"GET / HTTP/1.0\" 200'\nm = re.search(r\"(?P<IP>\\d+\\.\\d+\\.\\d+\\.\\d+)\", log)\nprint(m.group(\"IP\"))",
+      "options": ["127.0.0.1", "200", "IP", "rj"],
+      "correct": 0,
+      "explanation": "(?P<NAME>...) defines a named capture group. m.group('IP') retrieves the matched text by name — here, the IP address '127.0.0.1'. Named groups make log-parsing regexes self-documenting."
+    },
+    {
+      "question": "How do you find ALL IP addresses in an Apache log file (memory-efficient)?",
+      "code": "import re\n\n# Option A\nlog = open(\"access.log\").read()\nips = re.findall(r\"\\d+\\.\\d+\\.\\d+\\.\\d+\", log)\n\n# Option B\nwith open(\"access.log\") as f:\n    ips = [m.group() for m in re.finditer(r\"\\d+\\.\\d+\\.\\d+\\.\\d+\", f.read())]",
+      "options": ["A — simpler", "Both — but neither streams the file", "B — finditer is always lazy regardless of input", "A — findall is faster"],
+      "correct": 1,
+      "explanation": "Both versions call .read() and load the WHOLE file into memory before scanning. Neither streams. For a true streaming pattern, iterate line-by-line: 'for line in f: for m in re.finditer(...): ...'. The trap: re.finditer is lazy over its INPUT, but if you hand it the whole file as a string, you've already lost."
+    },
+    {
+      "question": "What does this print?",
+      "code": "import hashlib\nm = hashlib.md5()\nm.update(\"my-password\")\nprint(m.hexdigest())",
+      "options": ["A 32-character hex string", "TypeError: Strings must be encoded before hashing", "A 16-byte binary string", "EncodingError"],
+      "correct": 1,
+      "explanation": "hashlib requires BYTES, not str. Calling .update('my-password') raises TypeError. The fix is to encode first: m.update('my-password'.encode()) or use a bytes literal: m.update(b'my-password'). This is a common bug when porting from Python 2."
+    },
+    {
+      "question": "Which encryption approach should you use to encrypt a 5 GB log file before uploading to S3?",
+      "code": "# Symmetric (Fernet — AES-based)\nfrom cryptography.fernet import Fernet\nkey = Fernet.generate_key()\nencrypted = Fernet(key).encrypt(data)\n\n# Asymmetric (RSA — public/private key pair)",
+      "options": ["RSA — it's more secure", "Symmetric (Fernet) — faster and meant for large files", "Either is fine — performance is identical", "RSA — symmetric is deprecated"],
+      "correct": 1,
+      "explanation": "The book is explicit: symmetric encryption (one shared key) is FASTER and appropriate for large files. RSA (asymmetric) is much slower and meant for short messages or for exchanging the symmetric key itself. Real systems use RSA to exchange a Fernet key, then use Fernet for the bulk data."
+    },
+    {
+      "question": "What does this print?",
+      "code": "import pathlib\np = pathlib.Path(\"/etc\") / \"systemd\" / \"system.conf\"\nprint(p)",
+      "options": ["/etc/systemd/system.conf", "/etc systemd system.conf  (a tuple of three Paths)", "TypeError: unsupported operand type(s) for /", "etc/systemd/system.conf  (no leading slash)"],
+      "correct": 0,
+      "explanation": "The / operator on pathlib.Path is overloaded for joining path components. It works cross-platform (uses backslash on Windows, forward slash on Unix) and produces a single Path object. Much cleaner than os.path.join('/etc', 'systemd', 'system.conf')."
+    },
+    {
+      "question": "What does this print?",
+      "code": "import os\nprint(os.path.basename(\"/var/log/nginx/access.log\"))\nprint(os.path.dirname(\"/var/log/nginx/access.log\"))",
+      "options": ["access.log\\n/var/log/nginx", "/var/log/nginx\\naccess.log", "access.log\\nlog", "nginx\\n/var/log"],
+      "correct": 0,
+      "explanation": "os.path.basename returns the LAST path component (the file name); os.path.dirname returns everything BEFORE it (the parent directory). Easy to mix up — basename = 'base name', dirname = 'directory name'."
+    },
+    {
+      "question": "What does this code print?",
+      "code": "import os\nlog_level = os.environ.get(\"LOG_LEVEL\", \"INFO\")\nprint(log_level)",
+      "options": ["KeyError: 'LOG_LEVEL'", "None", "INFO  (assuming LOG_LEVEL is not set)", "An empty string ''"],
+      "correct": 2,
+      "explanation": "os.environ.get(KEY, DEFAULT) returns the env var if set, otherwise DEFAULT. If you used os.environ['LOG_LEVEL'] (subscript), an unset var would raise KeyError and crash your script. Always use .get() with a sensible default for optional env vars."
+    },
+    {
+      "question": "What does this print?",
+      "code": "import pathlib\nprint(type(pathlib.Path(\"photo.jpg\").read_bytes()).__name__)\nprint(type(pathlib.Path(\"photo.jpg\").read_text()).__name__)",
+      "options": ["str\\nbytes", "bytes\\nstr", "bytes\\nbytes", "str\\nstr"],
+      "correct": 1,
+      "explanation": "read_bytes() returns the raw bytes (a bytes object — no decoding). read_text() decodes the file's content as UTF-8 by default and returns a str. Use read_bytes() for binary files (images, archives, encrypted data) — read_text() would crash on non-UTF-8 sequences."
+    },
+    {
+      "question": "What is the result of mode 'wb' vs 'w' when writing a JPEG file?",
+      "code": "# Option A\nwith open(\"photo.jpg\", \"w\") as f:\n    f.write(image_bytes)\n\n# Option B\nwith open(\"photo.jpg\", \"wb\") as f:\n    f.write(image_bytes)",
+      "options": ["Both work identically", "Option A may corrupt the JPEG because Python translates line endings in text mode", "Option B is slower", "Option A is the recommended approach"],
+      "correct": 1,
+      "explanation": "Text mode ('w') translates line endings to platform-specific bytes (CRLF on Windows). For binary data this CORRUPTS the file — any 0x0A byte may be silently rewritten. Always use 'wb' for non-text data: images, archives, encrypted blobs, network packets."
+    },
+    {
+      "question": "What does Path.resolve() return?",
+      "code": "import pathlib\np = pathlib.Path(\"./logs/../app.log\")\nprint(p.resolve())",
+      "options": ["./logs/../app.log  (unchanged)", "An absolute path with .. and . normalized away", "PathError", "Just 'app.log'"],
+      "correct": 1,
+      "explanation": "Path.resolve() returns the canonical ABSOLUTE path: it joins with cwd if the path is relative, AND collapses '..' / '.' components. So './logs/../app.log' becomes something like '/home/user/app.log'. Useful for de-duplicating paths and for symlink resolution."
+    },
+    {
+      "question": "What does this YAML loading code use, and why?",
+      "code": "import yaml\n\nwith open(\"playbook.yml\") as f:\n    config = yaml.safe_load(f)",
+      "options": ["safe_load is just an alias for load", "safe_load disallows arbitrary Python object construction (yaml.load can execute code)", "safe_load is faster", "safe_load returns OrderedDict instead of dict"],
+      "correct": 1,
+      "explanation": "yaml.load() can construct arbitrary Python objects from YAML tags — including ones that execute code (RCE!). yaml.safe_load() is restricted to basic types (dict, list, str, int, etc.) and is the right choice for ANY untrusted input. PyYAML's docs explicitly recommend safe_load for almost all cases."
+    },
+    {
+      "question": "What does this os.walk usage print for a small directory?",
+      "code": "import os\nfor parent, dirs, files in os.walk(\"/tmp/demo\"):\n    print(len(dirs), len(files))",
+      "options": ["The total count of all directories and files", "(dirs in this iteration's parent, files in this iteration's parent)", "Just the top-level directory's count", "TypeError"],
+      "correct": 1,
+      "explanation": "os.walk yields a 3-tuple (current_path, list_of_subdirs, list_of_files) for EACH directory it visits, recursively. dirs/files are scoped to the current parent only — to get a total, accumulate across all iterations. Most useful for SREs cleaning up old log files or finding large files."
+    },
+    {
+      "question": "Why is dealing with hashlib MD5 considered insecure for password storage in 2026?",
+      "code": "import hashlib\nh = hashlib.md5(b\"password\").hexdigest()",
+      "options": ["MD5 is a fast hash; attackers can brute-force it on a GPU at billions of guesses per second. Use bcrypt/argon2.", "MD5 is encryption, not hashing", "MD5 outputs are too short (8 bytes)", "MD5 has been removed from hashlib"],
+      "correct": 0,
+      "explanation": "MD5 is a CRYPTOGRAPHIC HASH function — that's the correct algorithm category — but it is FAST. For password storage you want a SLOW hash (bcrypt, scrypt, argon2) that takes ~100ms per attempt, making brute-force economically infeasible. Use MD5 for non-security-critical checksums only."
+    },
+    {
+      "question": "You need to read a config file from one of three locations: an env var $APP_CONFIG_DIR, the cwd, or the user's home. What's the right way to expand '~/myapp.conf' to an absolute path?",
+      "code": "import os\nfrom pathlib import Path\n\n# Option A\npath = \"~/myapp.conf\"\n\n# Option B\npath = os.path.expanduser(\"~/myapp.conf\")\n\n# Option C\npath = Path(\"~/myapp.conf\").expanduser()",
+      "options": ["A — Python expands ~ automatically", "Only B works", "Only C works", "B and C both work; A leaves the literal '~' which file-open will fail on"],
+      "correct": 3,
+      "explanation": "Python does NOT auto-expand ~ — that's a shell feature. Calling open('~/myapp.conf') will look for a literal file named '~' in the current directory. Either os.path.expanduser() (string-based) or Path(...).expanduser() (pathlib-based) works. Always expand before opening."
+    }
+  ]
+}
