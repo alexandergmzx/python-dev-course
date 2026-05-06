@@ -17,3 +17,6 @@ __pycache__/
 
 # Claude Code local settings
 .claude/
+
+# Third-party resources (copyrighted books, large PDFs)
+*.pdf
